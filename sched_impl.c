@@ -8,9 +8,9 @@
 #include "sched.h"
 #include <assert.h>
 
-// sem_t controlSem; //semaphore to control how many threads are in the queue at a time
-// sem_t info->queue->cpu_sem;	  //To allow 1 thread at a time to use the CPU (acts as mutex);
-// sem_t info->queue->ready_sem;	  //acts exactly opposite to controlSem. makes sure queue is not empty.
+sem_t controlSem; //semaphore to control how many threads are in the queue at a time
+sem_t cpuSem; //To allow 1 thread at a time to use the CPU (acts as mutex);
+sem_t emptySem; //acts exactly opposite to controlSem. makes sure queue is not empty. 
 
 /* Initialize a thread_info_t */
 static void init_thread_info(thread_info_t *info, sched_queue_t *queue)
@@ -29,7 +29,7 @@ static void destroy_thread_info(thread_info_t *info)
 /* Block until the thread can enter the scheduler queue. */
 static void enter_sched_queue(thread_info_t *info)
 {
-	sem_wait(&info->queue->admit_sem);
+	sem_wait(&controlSem);
 
 	//pthread_mutex_lock(&info->queue->lock);
 
@@ -37,7 +37,7 @@ static void enter_sched_queue(thread_info_t *info)
 	list_elem_init(info->elt, (void *)info);
 	list_insert_tail(info->queue, info->elt);
 	if (list_size(info->queue) == 1) //list was previously empty notify wait_for_queue
-		sem_post(&info->queue->ready_sem);
+		sem_post(&emptySem);
 
 	//pthread_mutex_unlock(&info->queue->lock);
 }
@@ -46,7 +46,7 @@ static void enter_sched_queue(thread_info_t *info)
 static void leave_sched_queue(thread_info_t *info)
 {
 	list_remove_elem(info->queue, info->elt);
-	sem_post(&info->queue->admit_sem);
+	sem_post(&controlSem);
 }
 
 /* While on the scheduler queue, block until thread is scheduled. */
@@ -59,7 +59,7 @@ static void wait_for_cpu(thread_info_t *info)
  * over (cooperative multithreading). */
 static void release_cpu(thread_info_t *info)
 {
-	sem_post(&info->queue->cpu_sem);
+	sem_post(&cpuSem);
 	sched_yield();
 }
 
@@ -76,9 +76,9 @@ static void init_sched_queue(sched_queue_t *queue, int queue_size)
 	queue->nextWorker = NULL;
 	queue->list = (list_t *)malloc(sizeof(list_t));
 	list_init(queue->list);
-	sem_init(&queue->admit_sem, 0, queue_size);
-	sem_init(&queue->cpu_sem, 0, 0);   //block on first call of wait_for_worker
-	sem_init(&queue->ready_sem, 0, 0); //block on first call of wait_for_queue
+	sem_init(&controlSem, 0, queue_size);
+	sem_init(&cpuSem 0, 0);   //block on first call of wait_for_worker
+	sem_init(&emptySem, 0, 0); //block on first call of wait_for_queue
 }
 
 /* Release the resources associated with a sched_queue_t */
@@ -96,13 +96,13 @@ static void destroy_sched_queue(sched_queue_t *queue)
 /* Allow a worker thread to execute. */
 static void wake_up_worker(thread_info_t *info)
 {
-	sem_post(&info->queue->cpu_sem);
+	sem_post(&cpu_sem;
 }
 
 /* Block until the current worker thread relinquishes the CPU. */
-static void wait_for_worker(thread_info_t *info)
+static void wait_for_worker(sched_queue_t *queue)
 {
-	sem_wait(&info->queue->cpu_sem);
+	sem_wait(&cpuSem);
 }
 
 /* Select the next worker thread to execute in round-robin scheduling
@@ -153,9 +153,9 @@ static thread_info_t *next_worker_fifo(sched_queue_t *queue)
 }
 
 /* Block until at least one worker thread is in the scheduler queue. */
-static void wait_for_queue(thread_info_t *info)
+static void wait_for_queue(sched_queue_t *queue)
 {
-	sem_wait(&info->queue->ready_sem);
+	sem_wait(&emptySem);
 }
 
 sched_impl_t sched_fifo = {
