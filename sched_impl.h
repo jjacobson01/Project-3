@@ -4,10 +4,10 @@
 #include "list.h"
 
 struct thread_info {
-        list_t* queue;
-        list_elem_t* queueData;
-        sem_t runWorker;//Semaphore to activate or deactivate worker thread.
-        /*...Fill this in...*/
+        struct sched_queue *queue;
+        list_elem_t *elt;
+        sem_t cpu_sem;//Semaphore to activate or deactivate worker thread.
+        static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 };
 
 struct sched_queue {
@@ -18,3 +18,27 @@ struct sched_queue {
         /*...Fill this in...*/
 };
 #endif /* __SCHED_IMPL__H__ */
+
+/*
+
+#ifndef	__SCHED_IMPL__H__
+#define	__SCHED_IMPL__H__
+
+struct thread_info {
+
+	struct sched_queue *queue;
+	struct list_elem_t *elt;
+	sem_t cpu_sem;
+};
+
+struct sched_queue {
+
+	//mutex
+	sem_t admit_sem, ready_sem, cpu_sem;
+	list_t lst, lock;
+};
+
+#endif /* __SCHED_IMPL__H__ */
+
+
+/*

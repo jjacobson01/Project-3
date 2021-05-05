@@ -1,3 +1,8 @@
+//Name: Jonathan Jacobson
+//Partner Name: Jose Aguilar
+
+
+
 #include "scheduler.h"
 #include "sched_impl.h"
 #include <stdlib.h>
@@ -9,44 +14,50 @@ sem_t controlSem; //semaphore to control how many threads are in the queue at a 
 sem_t cpuSem; //To allow 1 thread at a time to use the CPU (acts as mutex);
 sem_t emptySem; //acts exactly opposite to controlSem. makes sure queue is not empty. 
 
-/*** WORKER THREAD OPS ***/
+
 
 /* Initialize a thread_info_t */
 static void init_thread_info(thread_info_t *info, sched_queue_t *queue)
 {
         info->queue = queue->list;
-        info->queueData = NULL;
+        info->elt = NULL;
+		sem_init(&info->cpu_sem,0,0);
 }
 
 /* Release the resources associated with a thread_info_t */
 static void destroy_thread_info(thread_info_t *info)
 {
-        free(info->queueData);
+        free(info->elt);
 }
 
 /* Block until the thread can enter the scheduler queue. */
 static void enter_sched_queue(thread_info_t *info)
 {
         sem_wait(&controlSem);
-        info->queueData = (list_elem_t*)malloc(sizeof(list_elem_t));
-        list_elem_init(info->queueData, (void*)info);
-        list_insert_tail(info->queue, info->queueData);
+
+		pthread_mutex_lock(&info->queue->lock);
+
+        info->elt = (list_elem_t*)malloc(sizeof(list_elem_t));
+        list_elem_init(info->elt, (void*)info);
+        list_insert_tail(info->queue, info->elt);
         if(list_size(info->queue) == 1)//list was previously empty notify wait_for_queue
                 sem_post(&emptySem);
-        sem_init(&info->runWorker,0,0);
+		
+		pthread_mutex_unlock(&info->queue->lock);
+        
 }
 
 /* Remove the thread from the scheduler queue. */
 static void leave_sched_queue(thread_info_t *info)
 {
-        list_remove_elem(info->queue, info->queueData);
+        list_remove_elem(info->queue, info->elt);
         sem_post(&controlSem);
 }
 
 /* While on the scheduler queue, block until thread is scheduled. */
 static void wait_for_cpu(thread_info_t *info)
 {
-        sem_wait(&info->runWorker);
+        sem_wait(&info->cpu_sem);
 }
 
 /* Voluntarily relinquish the CPU when this thread's timeslice is
@@ -88,7 +99,7 @@ static void destroy_sched_queue(sched_queue_t *queue)
 /* Allow a worker thread to execute. */
 static void wake_up_worker(thread_info_t *info)
 {
-        sem_post(&info->runWorker);
+        sem_post(&info->cpu_sem);
 }
 
 /* Block until the current worker thread relinquishes the CPU. */
