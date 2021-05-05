@@ -15,7 +15,7 @@ struct sched_queue {
         list_elem_t* nextWorker;
         //Insert all semaphores for queue here
         list_t* list;
-		pthread_mutex_t lock;
+		//pthread_mutex_t lock;
         /*...Fill this in...*/
 };
 #endif /* __SCHED_IMPL__H__ */
