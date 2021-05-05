@@ -31,7 +31,7 @@ static void enter_sched_queue(thread_info_t *info)
 {
 	sem_wait(&controlSem);
 
-	pthread_mutex_lock(&info->queue->lock);
+	//pthread_mutex_lock(&info->queue->lock);
 
 	info->elt = (list_elem_t *)malloc(sizeof(list_elem_t));
 	list_elem_init(info->elt, (void *)info);
@@ -39,7 +39,7 @@ static void enter_sched_queue(thread_info_t *info)
 	if (list_size(info->queue) == 1) //list was previously empty notify wait_for_queue
 		sem_post(&emptySem);
 
-	pthread_mutex_unlock(&info->queue->lock);
+	//pthread_mutex_unlock(&info->queue->lock);
 }
 
 /* Remove the thread from the scheduler queue. */
