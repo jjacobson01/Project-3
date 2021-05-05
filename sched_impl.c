@@ -77,7 +77,7 @@ static void init_sched_queue(sched_queue_t *queue, int queue_size)
 	queue->list = (list_t *)malloc(sizeof(list_t));
 	list_init(queue->list);
 	sem_init(&controlSem, 0, queue_size);
-	sem_init(&cpuSem 0, 0);   //block on first call of wait_for_worker
+	sem_init(&cpuSem, 0, 0);   //block on first call of wait_for_worker
 	sem_init(&emptySem, 0, 0); //block on first call of wait_for_queue
 }
 
@@ -96,7 +96,7 @@ static void destroy_sched_queue(sched_queue_t *queue)
 /* Allow a worker thread to execute. */
 static void wake_up_worker(thread_info_t *info)
 {
-	sem_post(&cpu_sem;
+	sem_post(&cpu_sem);
 }
 
 /* Block until the current worker thread relinquishes the CPU. */
