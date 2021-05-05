@@ -66,7 +66,7 @@ static void release_cpu(thread_info_t *info)
 /*** SCHED_OPS ***/
 
 /* Initialize a sched_queue_t */
-static void init_sched_queue(sched_queue_t *queue, int queue_size)
+static void init_sched_queue(thread_info_t *info, sched_queue_t *queue, int queue_size)
 {
 	if (queue_size <= 0)
 	{
@@ -100,7 +100,7 @@ static void wake_up_worker(thread_info_t *info)
 }
 
 /* Block until the current worker thread relinquishes the CPU. */
-static void wait_for_worker(sched_queue_t *queue)
+static void wait_for_worker(thread_info_t *info, sched_queue_t *queue)
 {
 	sem_wait(&info->queue->cpu_sem);
 }
@@ -153,7 +153,7 @@ static thread_info_t *next_worker_fifo(sched_queue_t *queue)
 }
 
 /* Block until at least one worker thread is in the scheduler queue. */
-static void wait_for_queue(sched_queue_t *queue)
+static void wait_for_queue(thread_info_t *info, sched_queue_t *queue)
 {
 	sem_wait(&info->queue->ready_sem);
 }
