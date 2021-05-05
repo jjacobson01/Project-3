@@ -41,4 +41,3 @@ struct sched_queue {
 #endif /* __SCHED_IMPL__H__ */
 
 
-/*
