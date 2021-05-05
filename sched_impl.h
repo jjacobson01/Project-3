@@ -17,7 +17,7 @@ struct sched_queue {
         list_t* list, lock;
         /*...Fill this in...*/
 
-		//sem_t admit_sem, ready_sem, cpu_sem;
+		sem_t admit_sem, ready_sem, cpu_sem;
 };
 #endif /* __SCHED_IMPL__H__ */
 
