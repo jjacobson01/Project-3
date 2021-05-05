@@ -8,7 +8,7 @@
 #include "sched.h"
 #include <assert.h>
 
-sem_t controlSem; //semaphore to control how many threads are in the queue at a time
+//sem_t controlSem; //semaphore to control how many threads are in the queue at a time
 sem_t cpuSem; //To allow 1 thread at a time to use the CPU (acts as mutex);
 sem_t emptySem; //acts exactly opposite to controlSem. makes sure queue is not empty. 
 
@@ -76,7 +76,7 @@ static void init_sched_queue(sched_queue_t *queue, int queue_size)
 	queue->nextWorker = NULL;
 	queue->list = (list_t *)malloc(sizeof(list_t));
 	list_init(queue->list);
-	//sem_init(&info->queue->admit_sem, 0, queue_size);
+	sem_init(&queue->admit_sem, 0, queue_size);
 	sem_init(&cpuSem, 0, 0);   //block on first call of wait_for_worker
 	sem_init(&emptySem, 0, 0); //block on first call of wait_for_queue
 }
