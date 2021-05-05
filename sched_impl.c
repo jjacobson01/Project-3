@@ -66,7 +66,7 @@ static void release_cpu(thread_info_t *info)
 /*** SCHED_OPS ***/
 
 /* Initialize a sched_queue_t */
-static void init_sched_queue(thread_info_t *info,  int queue_size)
+static void init_sched_queue(sched_queue_t *queue, int queue_size)
 {
 	if (queue_size <= 0)
 	{
@@ -76,9 +76,9 @@ static void init_sched_queue(thread_info_t *info,  int queue_size)
 	queue->nextWorker = NULL;
 	queue->list = (list_t *)malloc(sizeof(list_t));
 	list_init(queue->list);
-	sem_init(&info->queue->admit_sem, 0, queue_size);
-	sem_init(&info->queue->cpu_sem, 0, 0);   //block on first call of wait_for_worker
-	sem_init(&info->queue->ready_sem, 0, 0); //block on first call of wait_for_queue
+	sem_init(&queue->admit_sem, 0, queue_size);
+	sem_init(&queue->cpu_sem, 0, 0);   //block on first call of wait_for_worker
+	sem_init(&queue->ready_sem, 0, 0); //block on first call of wait_for_queue
 }
 
 /* Release the resources associated with a sched_queue_t */
@@ -153,7 +153,7 @@ static thread_info_t *next_worker_fifo(sched_queue_t *queue)
 }
 
 /* Block until at least one worker thread is in the scheduler queue. */
-static void wait_for_queue(sched_queue_t *queue)
+static void wait_for_queue(sched_queue_t *info)
 {
 	sem_wait(&info->queue->ready_sem);
 }
