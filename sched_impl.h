@@ -17,6 +17,8 @@ struct sched_queue {
         list_t* list;
 		//pthread_mutex_t lock;
         /*...Fill this in...*/
+
+		sem_t admit_sem, ready_sem, cpu_sem;
 };
 #endif /* __SCHED_IMPL__H__ */
 
