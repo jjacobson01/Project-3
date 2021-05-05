@@ -96,7 +96,7 @@ static void destroy_sched_queue(sched_queue_t *queue)
 /* Allow a worker thread to execute. */
 static void wake_up_worker(thread_info_t *info)
 {
-	sem_post(&cpu_sem);
+	sem_post(&info->cpu_sem);
 }
 
 /* Block until the current worker thread relinquishes the CPU. */
