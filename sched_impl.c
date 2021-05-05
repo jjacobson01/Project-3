@@ -29,7 +29,7 @@ static void destroy_thread_info(thread_info_t *info)
 /* Block until the thread can enter the scheduler queue. */
 static void enter_sched_queue(thread_info_t *info)
 {
-	sem_wait(&controlSem);
+	sem_wait(&info->queue->admit_sem);
 
 	//pthread_mutex_lock(&info->queue->lock);
 
@@ -46,7 +46,7 @@ static void enter_sched_queue(thread_info_t *info)
 static void leave_sched_queue(thread_info_t *info)
 {
 	list_remove_elem(info->queue, info->elt);
-	sem_post(&controlSem);
+	sem_post(&info->queue->admit_sem);
 }
 
 /* While on the scheduler queue, block until thread is scheduled. */
@@ -76,7 +76,7 @@ static void init_sched_queue(sched_queue_t *queue, int queue_size)
 	queue->nextWorker = NULL;
 	queue->list = (list_t *)malloc(sizeof(list_t));
 	list_init(queue->list);
-	sem_init(&controlSem, 0, queue_size);
+	//sem_init(&info->queue->admit_sem, 0, queue_size);
 	sem_init(&cpuSem, 0, 0);   //block on first call of wait_for_worker
 	sem_init(&emptySem, 0, 0); //block on first call of wait_for_queue
 }
