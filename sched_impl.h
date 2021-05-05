@@ -7,7 +7,7 @@ struct thread_info {
         struct sched_queue *queue;
         list_elem_t *elt;
         sem_t cpu_sem;//Semaphore to activate or deactivate worker thread.
-        pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
+        pthread_mutex_t lock;
 };
 
 struct sched_queue {
