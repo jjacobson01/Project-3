@@ -5,6 +5,7 @@
 #include "sched_impl.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <sched.h>
 #include <assert.h>
 
 sem_t admit_sem, ready_sem, cpu_sem;

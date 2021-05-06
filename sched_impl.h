@@ -7,7 +7,7 @@ struct thread_info {
     /*...Fill this in...*/
         struct sched_queue *queue;
         list_elem_t *elt;
-        sem_t cpu_sem;//Semaphore to activate or deactivate worker thread.
+        sem_t cpu_sem;
         
 };
 
