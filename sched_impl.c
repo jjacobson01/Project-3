@@ -9,8 +9,8 @@
 #include <assert.h>
 
 sem_t admit_sem; //semaphore to control how many threads are in the queue at a time
-sem_t cpuSem; //To allow 1 thread at a time to use the CPU (acts as mutex);
-sem_t emptySem; //acts exactly opposite to admit_sem. makes sure queue is not empty. 
+sem_t cpu_sem; //To allow 1 thread at a time to use the CPU (acts as mutex);
+sem_t ready_sem; //acts exactly opposite to admit_sem. makes sure queue is not empty. 
 
 /* Initialize a thread_info_t */
 static void init_thread_info(thread_info_t *info, sched_queue_t *queue)
@@ -35,9 +35,11 @@ static void enter_sched_queue(thread_info_t *info)
 
 	info->elt = (list_elem_t *)malloc(sizeof(list_elem_t));
 	list_elem_init(info->elt, (void *)info);
+
+
 	list_insert_tail(info->queue, info->elt);
 	if (list_size(info->queue) == 1) //list was previously empty notify wait_for_queue
-		sem_post(&emptySem);
+		sem_post(&ready_sem);
 
 	//pthread_mutex_unlock(&info->queue->lock);
 }
@@ -59,7 +61,7 @@ static void wait_for_cpu(thread_info_t *info)
  * over (cooperative multithreading). */
 static void release_cpu(thread_info_t *info)
 {
-	sem_post(&cpuSem);
+	sem_post(&cpu_sem);
 	sched_yield();
 }
 
@@ -77,8 +79,8 @@ static void init_sched_queue(sched_queue_t *queue, int queue_size)
 	queue->list = (list_t *)malloc(sizeof(list_t));
 	list_init(queue->list);
 	sem_init(&admit_sem, 0, queue_size);
-	sem_init(&cpuSem, 0, 0);   //block on first call of wait_for_worker
-	sem_init(&emptySem, 0, 0); //block on first call of wait_for_queue
+	sem_init(&cpu_sem, 0, 0);   //block on first call of wait_for_worker
+	sem_init(&ready_sem, 0, 0); //block on first call of wait_for_queue
 }
 
 /* Release the resources associated with a sched_queue_t */
@@ -102,7 +104,7 @@ static void wake_up_worker(thread_info_t *info)
 /* Block until the current worker thread relinquishes the CPU. */
 static void wait_for_worker(sched_queue_t *queue)
 {
-	sem_wait(&cpuSem);
+	sem_wait(&cpu_sem);
 }
 
 /* Select the next worker thread to execute in round-robin scheduling
@@ -155,7 +157,7 @@ static thread_info_t *next_worker_fifo(sched_queue_t *queue)
 /* Block until at least one worker thread is in the scheduler queue. */
 static void wait_for_queue(sched_queue_t *queue)
 {
-	sem_wait(&emptySem);
+	sem_wait(&ready_sem);
 }
 
 sched_impl_t sched_fifo = {
