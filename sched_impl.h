@@ -1,6 +1,5 @@
 #ifndef   __SCHED_IMPL__H__
 #define __SCHED_IMPL__H__
-#include <semaphore.h>
 #include "list.h"
 
 struct thread_info {
@@ -17,7 +16,8 @@ struct sched_queue {
         list_t* list, lock;
         /*...Fill this in...*/
 
-		sem_t admit_sem, ready_sem, cpu_sem;
+        //added semaphores in sched_impl.c instead
+		//sem_t admit_sem, ready_sem, cpu_sem;
 };
 #endif /* __SCHED_IMPL__H__ */
 
