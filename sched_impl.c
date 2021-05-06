@@ -66,7 +66,10 @@ static void release_cpu(thread_info_t *info)
 static void init_sched_queue(sched_queue_t *queue, int queue_size)
 {
 	/*...Code goes here...*/
-
+	if (queue_size <= 0)
+	{
+		exit(-1);
+	}
 	queue->current = NULL;
 	queue->next = NULL;
 	queue->list = (list_t *)malloc(sizeof(list_t));
