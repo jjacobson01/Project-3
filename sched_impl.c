@@ -5,18 +5,19 @@
 #include "sched_impl.h"
 #include <stdlib.h>
 #include <stdio.h>
-#include <sched.h>
 #include <assert.h>
 
-sem_t admit_sem, ready_sem, cpu_sem;
 
 /* Fill in your scheduler implementation code below: */
 
 /*...Code goes here...*/
 static void init_thread_info(thread_info_t *info, sched_queue_t *queue)
 {
+	//here we initialize the queue and point our info's queue to the list.
 	info->queue = queue->list;
+	//the data is set to null since we don't have any actual data
 	info->elt = NULL;
+	//we initialize the semaphore
 	sem_init(&info->cpu_sem, 0, 0);
 }
 
@@ -44,19 +45,16 @@ static void enter_sched_queue(thread_info_t *info)
 	//pthread_mutex_unlock(&info->queue->lock);
 }
 
-
 static void leave_sched_queue(thread_info_t *info)
 {
 	list_remove_elem(info->queue, info->elt);
 	sem_post(&admit_sem);
 }
 
-
 static void wait_for_cpu(thread_info_t *info)
 {
 	sem_wait(&info->cpu_sem);
 }
-
 
 static void release_cpu(thread_info_t *info)
 {
@@ -67,10 +65,17 @@ static void release_cpu(thread_info_t *info)
 static void init_sched_queue(sched_queue_t *queue, int queue_size)
 {
 	/*...Code goes here...*/
+	//we just do a basic check
+	//to make suer we never try to use
+	//a queue that is empty
 	if (queue_size <= 0)
 	{
 		exit(-1);
 	}
+
+	//we set the queue's variables
+	//with NULL since we haven't pointed to anything
+	//and initialize the semaphores
 	queue->current = NULL;
 	queue->next = NULL;
 	queue->list = (list_t *)malloc(sizeof(list_t));
@@ -122,7 +127,7 @@ static thread_info_t *next_worker_rr(sched_queue_t *queue)
 		}
 		else
 		{
-			queue->current = list_get_tail(queue->list); 
+			queue->current = list_get_tail(queue->list);
 		}
 	}
 	else
@@ -154,5 +159,4 @@ static void wait_for_queue(sched_queue_t *queue)
 sched_impl_t sched_fifo = {
 				 {init_thread_info, destroy_thread_info, enter_sched_queue, leave_sched_queue, wait_for_cpu, release_cpu},
 				 {init_sched_queue, destroy_sched_queue, wake_up_worker, wait_for_worker, next_worker_fifo, wait_for_queue}},
-			 sched_rr = {{init_thread_info, destroy_thread_info, enter_sched_queue, leave_sched_queue, wait_for_cpu, release_cpu},
-			  {init_sched_queue, destroy_sched_queue, wake_up_worker, wait_for_worker, next_worker_rr, wait_for_queue}};
+			 sched_rr = {{init_thread_info, destroy_thread_info, enter_sched_queue, leave_sched_queue, wait_for_cpu, release_cpu}, {init_sched_queue, destroy_sched_queue, wake_up_worker, wait_for_worker, next_worker_rr, wait_for_queue}};
