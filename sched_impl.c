@@ -37,8 +37,8 @@ static void enter_sched_queue(thread_info_t *info)
 	list_elem_init(info->elt, (void *)info);
 
 	list_insert_tail(info->queue, info->elt);
-	if (list_size(info->queue) == 1) 
-		sem_post(&ready_sem);
+
+	sem_post(&ready_sem);
 
 	//pthread_mutex_unlock(&info->queue->lock);
 }
@@ -66,12 +66,9 @@ static void release_cpu(thread_info_t *info)
 static void init_sched_queue(sched_queue_t *queue, int queue_size)
 {
 	/*...Code goes here...*/
-	if (queue_size <= 0)
-	{
-		exit(-1);
-	}
-	queue->currentWorker = NULL;
-	queue->nextWorker = NULL;
+
+	queue->current = NULL;
+	queue->next = NULL;
 	queue->list = (list_t *)malloc(sizeof(list_t));
 	list_init(queue->list);
 	sem_init(&admit_sem, 0, queue_size);
@@ -109,28 +106,28 @@ static thread_info_t *next_worker_rr(sched_queue_t *queue)
 		return NULL;
 	}
 
-	if (queue->currentWorker == NULL)
+	if (queue->current == NULL)
 	{
-		queue->currentWorker = list_get_head(queue->list);
+		queue->current = list_get_head(queue->list);
 	}
-	else if (queue->nextWorker == NULL)
+	else if (queue->next == NULL)
 	{
-		if (queue->currentWorker == list_get_tail(queue->list))
+		if (queue->current == list_get_tail(queue->list))
 		{
-			queue->currentWorker = list_get_head(queue->list);
+			queue->current = list_get_head(queue->list);
 		}
 		else
 		{
-			queue->currentWorker = list_get_tail(queue->list); //collect the new tail
+			queue->current = list_get_tail(queue->list); 
 		}
 	}
 	else
 	{
-		queue->currentWorker = queue->nextWorker;
+		queue->current = queue->next;
 	}
 
-	queue->nextWorker = queue->currentWorker->next;
-	return (thread_info_t *)queue->currentWorker->datum;
+	queue->next = queue->current->next;
+	return (thread_info_t *)queue->current->datum;
 }
 
 static thread_info_t *next_worker_fifo(sched_queue_t *queue)

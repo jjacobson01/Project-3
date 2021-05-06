@@ -4,6 +4,7 @@
 #include "list.h"
 
 struct thread_info {
+    /*...Fill this in...*/
         struct sched_queue *queue;
         list_elem_t *elt;
         sem_t cpu_sem;//Semaphore to activate or deactivate worker thread.
@@ -11,12 +12,11 @@ struct thread_info {
 };
 
 struct sched_queue {
-        list_elem_t* currentWorker;
-        list_elem_t* nextWorker;
-        //Insert all semaphores for queue here
-        list_t* list, lock;
-        /*...Fill this in...*/
+    /*...Fill this in...*/
 
+        list_elem_t* current, next;
+        list_t* list, lock; //not sure how to get the mutex of lock working
+    
         //added semaphores in sched_impl.c instead
 		//sem_t admit_sem, ready_sem, cpu_sem;
 };
