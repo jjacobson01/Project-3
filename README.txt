@@ -33,7 +33,7 @@ the core synchronization and scheduling operations.
 As provided, the project only includes the "dummy" scheduling algorithm, which
 doesn't even try to do anything.  You can run it like this:
   make
-  ./scheduler -dummy 0 N   # where N is some number of worker threads
+  ./scheduler -dummy 0 N 1  # where N is some number of worker threads
 All threads run right away regardless of the queue size (even zero!), and
 are scheduled by the operating system.  The goal of this project is to create
 scheduler implementations which are a bit more controlled and predictable.
@@ -219,39 +219,91 @@ Q 1  What are some pros and cons of using the struct of function pointers
      significantly affect performance?  Give some examples of when you would
      and wouldn't use this approach, and why.
 
+     As far as I know the only benefit is the flexibility if being able to call them easily as 
+     you would variables so a function can call another function easily with function pointers.
+     I don't believe there is any real performance increase. So whenever you are dealing with a lot 
+     of functions within functions(functception!) then it is more ideal to use pointers.
+
+
+
 Q 2  Briefly describe the synchronization constructs you needed to implement
      this MP--i.e., how you mediated admission of threads to the scheduler
      queue and how you made sure only the scheduled thread would run at any
      given time.
 
+    To make sure that each thread ran and executed at it's correct time we used synchronized threading.
+
+
+
 Q 3  Why is the dummy scheduling implementation provided potentially
      unsafe (i.e. could result in invalid memory references)?  How does
      your implementation avoid this problem?
+
+     It's unsafe and does cause the error "invalid memory reference" likely because of allocation issues.
+     applying allocation techniques in our function allowed us to avoid such error.
+
+
 
 Q 4  When using the FIFO or Round Robin scheduling algorithm, can
      sched_proc() ever "miss" any threads and exit early before all threads
      have been scheduled and run to completion?  If yes, give an example; if
      no, explain why not.
 
+    To completely run our program, we have all our threads linked so that all must go complete before exiting.
+
+
+
 Q 5  Why are the three variables in scheduler.h declared 'extern'?  What
      would happen if they were not declared 'extern'?  What would happen
      if they were not declared without the 'extern' in any file?
+    
+    'Extern' basically allows any variable/function that is declared with the 'extern' to be called anywhere
+    in the program. It's primarily used in a header file so your .c files can call those variables/functions with no issues
+    of overloading or mangling occurances. If they were not declared as extern in schedular.h then the C compiler likely won't
+    know where the variables are being declared and an error will occur.
+
+
 
 Q 6  Describe the behavior of exit_error() function in scheduler.c.  Why
      does exit_error() not use errno?
 
+    it's a simple error message that prints out an error statement including the argument error received. I believe
+    that errno is fine but likely not used cuz it's unnecessary and likely increases run-time of the program. exit_error()
+    provides the error statement initself and is simpler.
+
+
+
+
 Q 7  Does it matter whether the call to sched_ops->wait_for_queue(queue) in
      sched_proc() actually does anything?  How would it affect correctness
      if it just returned right away?  How about performance?
+    
+    sched_ops->wait_for_queue(queue) helps control the queue of threads waiting, it is important because without it,
+    there could be conflict with other threads, which can cause the integrity of the program to fail.
+
+
+
 
 Q 8  Explain how worker_proc() is able to call the appropriate
      implementation of wait_for_cpu() corresponding to the scheduling policy
      selected by the user on the command line.  Start from main() and
      briefly explain each step along the way.
+    
+    once Main() calls create_workers and with the arguments received, it will set the values of
+    worker_args_t along with calling worker_proc() with the parameter given given by worker_args_t that was just
+    set. Worker_proc will then call the wait_for_cpu() including the information from the thread inside worker_args_t.
+
+
+
 
 Q 9  Is it possible that a worker thread would never proceed past the call to
      wa->ops->wait_for_cpu(&wa->info) when using one of the scheduling
      policies implemented in this MP?
+
+     I believe it's possible. If all processes available equal to the amount of threads or less then it may not
+     proceed past the call to wa->ops->wait_for_cpu(&wa->info).
+
+
 
 Q 10 Explain how you would alter the program to demonstrate the "convoy"
      effect, when a large compute bound job that never yields to another
@@ -261,3 +313,10 @@ Q 10 Explain how you would alter the program to demonstrate the "convoy"
      processes".  Why is it difficult to show the benefits of Round Robin
      scheduling in this case using the current implementation in the machine
      problem?
+
+    Altering FIFO by just increasing the amount of time a process can stay, will eventually
+    cause a convoy effect.
+    for Round Robin I'm not sure how to can implement the convoy effect since Round Robin avoids convoy effect.
+
+
+
