@@ -14,7 +14,8 @@ struct thread_info {
 struct sched_queue {
     /*...Fill this in...*/
 
-        list_elem_t* current, next;
+        list_elem_t* current;
+        list_elem_t* next;
         list_t* list, lock; //not sure how to get the mutex of lock working
     
         //added semaphores in sched_impl.c instead
